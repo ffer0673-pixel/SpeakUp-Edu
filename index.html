@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SpeakUp Edu</title>
+<style>
+:root{--red:#701c1c;--cream:#F0EAD6;--black:#000;--card:#f8f4e6;--line:rgba(0,0,0,.18);--red-d:#521212}
+*{box-sizing:border-box;margin:0}
+body{font-family:"Segoe UI",system-ui,sans-serif;background:var(--cream);color:var(--black);line-height:1.55;min-height:100vh}
+h1,h2,h3,.big{font-family:Georgia,"Times New Roman",serif}
+button,input,select,textarea{font:inherit}
+:focus-visible{outline:3px solid var(--red);outline-offset:2px}
+.top{background:var(--black);color:var(--cream);padding:.8rem 1.2rem;display:flex;align-items:center;gap:.7rem;position:sticky;top:0;z-index:5}
+.top h1{font-size:1.15rem;font-weight:700}
+.top svg{width:26px;height:26px;flex:none}
+.layout{display:grid;grid-template-columns:220px 1fr;min-height:calc(100vh - 54px)}
+nav{background:var(--red);padding:1rem .7rem;display:flex;flex-direction:column;gap:.3rem}
+nav button{background:none;border:0;color:var(--cream);text-align:left;padding:.65rem .8rem;border-radius:10px;cursor:pointer;display:flex;gap:.6rem;align-items:center}
+nav button:hover{background:rgba(240,234,214,.15)}
+nav button.on{background:var(--cream);color:var(--red);font-weight:700}
+nav svg{width:18px;height:18px;flex:none}
+main{padding:1.5rem;max-width:960px;width:100%}
+section{display:none}section.on{display:block}
+h2{font-size:1.7rem;color:var(--red);margin-bottom:.3rem}
+.sub{margin-bottom:1.2rem;opacity:.75}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:1.2rem;margin-bottom:1rem;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.card h3{margin-bottom:.6rem;font-size:1.15rem}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1rem;margin-bottom:1rem}
+.stat{background:var(--red);color:var(--cream);border-radius:16px;padding:1rem 1.2rem}
+.stat b{display:block;font:700 2.2rem Georgia,serif}
+.btn{background:var(--red);color:var(--cream);border:2px solid var(--red);border-radius:10px;padding:.55rem 1rem;cursor:pointer;font-weight:600}
+.btn:hover{background:var(--red-d)}
+.btn.alt{background:transparent;color:var(--red)}.btn.alt:hover{background:rgba(112,28,28,.1)}
+.btn.dark{background:var(--black);border-color:var(--black)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.row{display:flex;flex-wrap:wrap;gap:.6rem;align-items:center;margin:.6rem 0}
+input,select,textarea{border:2px solid var(--black);background:#fffdf5;border-radius:10px;padding:.5rem .7rem;color:var(--black)}
+input[type=text]{flex:1;min-width:180px}
+textarea{width:100%;min-height:90px;resize:vertical}
+label{font-weight:600}
+ul.list{list-style:none;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:.5rem}
+ul.list li{display:flex;justify-content:space-between;align-items:center;gap:.4rem;background:#fffdf5;border:1px solid var(--line);border-radius:10px;padding:.4rem .4rem .4rem .8rem}
+ul.list li.done{border-color:var(--red);background:rgba(112,28,28,.08)}
+.sm{padding:.2rem .55rem;font-size:.85rem}
+.empty{border:2px dashed var(--line);border-radius:12px;padding:1.2rem;text-align:center;opacity:.8}
+.stage{background:var(--red);color:var(--cream);border-radius:20px;padding:2.2rem 1rem;text-align:center;margin:.8rem 0;min-height:160px;display:flex;flex-direction:column;justify-content:center;gap:.4rem}
+.big{font-size:clamp(2rem,7vw,3.6rem);font-weight:700;word-break:break-word}
+.big.spin{animation:pulse .18s infinite alternate}
+@keyframes pulse{from{transform:scale(.96);opacity:.7}to{transform:scale(1.04);opacity:1}}
+.prompt{border-left:6px solid var(--red);padding:.4rem 1rem;background:#fffdf5;border-radius:0 12px 12px 0}
+.prompt .q{font:700 1.3rem Georgia,serif}
+.tag{display:inline-block;border:1px solid var(--red);color:var(--red);border-radius:99px;padding:0 .6rem;font-size:.82rem;margin:.3rem .3rem 0 0}
+.hint{background:var(--cream);border:1px dashed var(--red);border-radius:10px;padding:.5rem .8rem;margin-top:.6rem}
+.clock{font:700 clamp(3.5rem,14vw,6.5rem) Georgia,serif;text-align:center;background:var(--black);color:var(--cream);border-radius:20px;padding:1rem;transition:background .3s}
+.clock.warn{background:var(--red);animation:pulse .5s infinite alternate}
+.clock.end{background:var(--red-d)}
+.steps li{margin-left:1.2rem;margin-bottom:.25rem}
+.toast{position:fixed;bottom:1rem;left:50%;transform:translateX(-50%);background:var(--black);color:var(--cream);padding:.7rem 1.2rem;border-radius:12px;opacity:0;pointer-events:none;transition:opacity .25s;z-index:20;max-width:90vw}
+.toast.show{opacity:1}.toast.err{background:var(--red)}
+.check{display:flex;align-items:center;gap:.5rem;font-weight:400}
+.check input{width:1.1rem;height:1.1rem;accent-color:var(--red)}
+@media(max-width:760px){
+.layout{grid-template-columns:1fr}
+nav{flex-direction:row;overflow-x:auto;padding:.5rem}
+nav button{white-space:nowrap}
+main{padding:1rem}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<header class="top">
+<svg viewBox="0 0 24 24" fill="none" stroke="#F0EAD6" stroke-width="2" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"/><path d="M8 9h8M8 12h5"/></svg>
+<h1>SpeakUp Edu</h1>
+</header>
+<div class="layout">
+<nav aria-label="Main navigation" id="nav">
+<button data-go="dash"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>Dashboard</button>
+<button data-go="students"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="4"/><path d="M2 21c0-4 3-6 7-6s7 2 7 6M17 4a4 4 0 010 8M22 21c0-3-2-5-4-5.6"/></svg>Students</button>
+<button data-go="picker"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8" cy="8" r="1.2"/><circle cx="16" cy="16" r="1.2"/><circle cx="12" cy="12" r="1.2"/></svg>Random Picker</button>
+<button data-go="prompts"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5h16v11H9l-5 4z"/></svg>Speaking Prompts</button>
+<button data-go="timer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l3 2M9 2h6"/></svg>Timer</button>
+<button data-go="activity"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 3l14 9-14 9z"/></svg>Activity Mode</button>
+<button data-go="games"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3 7h7l-5.5 4.5L18.5 21 12 16.8 5.5 21l2-7.5L2 9h7z"/></svg>Games</button>
+</nav>
+<main>
+
+<!-- DASHBOARD -->
+<section id="dash">
+<h2>Dashboard</h2>
+<p class="sub">Welcome, teacher! Add your students, then start a classroom activity.</p>
+<div class="stats">
+<div class="stat"><b id="sStud">0</b>Students</div>
+<div class="stat"><b id="sPrompt">0</b>Speaking prompts</div>
+<div class="stat"><b id="sDone">0</b>Completed selections</div>
+</div>
+<div class="card"><h3>Quick start</h3>
+<ol class="steps">
+<li>Go to <b>Students</b> and add your class list.</li>
+<li>Open <b>Activity Mode</b> to run a full speaking turn.</li>
+<li>Use <b>Games</b> for a quick warm-up or review.</li>
+</ol>
+<div class="row"><button class="btn" data-go="students">Add students</button><button class="btn alt" data-go="activity">Start an activity</button><button class="btn alt" id="resetStats">Reset selection count</button></div></div>
+</section>
+
+<!-- STUDENTS -->
+<section id="students">
+<h2>Students</h2>
+<p class="sub">Total students: <b id="stCount">0</b></p>
+<div class="card"><h3>Add one student</h3>
+<form class="row" id="addForm">
+<label for="nameIn" class="sr" style="position:absolute;left:-9999px">Student name</label>
+<input type="text" id="nameIn" placeholder="Type a student name" maxlength="40" autocomplete="off">
+<button class="btn" type="submit">Add student</button></form>
+<h3 style="margin-top:1rem">Add many students</h3>
+<label for="bulkIn" style="position:absolute;left:-9999px">Paste names, one per line</label>
+<textarea id="bulkIn" placeholder="Paste names here, one name per line"></textarea>
+<div class="row"><button class="btn" id="bulkBtn">Add all names</button></div></div>
+<div class="card"><h3>Class list</h3>
+<div id="stList"></div>
+<div class="row"><button class="btn alt" id="clearBtn">Clear entire list</button></div></div>
+</section>
+
+<!-- PICKER -->
+<section id="picker">
+<h2>Random Picker</h2>
+<p class="sub">Choose a student at random for any activity.</p>
+<div class="card">
+<div class="stage" aria-live="polite"><div id="pkName" class="big">Ready?</div><div id="pkInfo"></div></div>
+<div class="row"><button class="btn" id="pkBtn">Pick a student</button>
+<button class="btn alt" id="pkReset">Reset round</button>
+<label class="check"><input type="checkbox" id="noRepeat"> Do not repeat students until everyone has had a turn</label></div>
+<p id="pkLeft" class="sub"></p>
+</div>
+</section>
+
+<!-- PROMPTS -->
+<section id="prompts">
+<h2>Speaking Prompts</h2>
+<p class="sub">Choose a category and grade, then generate a prompt.</p>
+<div class="card">
+<div class="row">
+<label for="pCat">Category</label><select id="pCat"></select>
+<label for="pGrade">Grade</label><select id="pGrade"><option value="all">All grades</option><option>7</option><option>8</option><option>9</option></select>
+<button class="btn" id="pGen">Generate prompt</button></div>
+<div id="pOut"><div class="empty">Press "Generate prompt" to see a speaking task.</div></div>
+</div>
+</section>
+
+<!-- TIMER -->
+<section id="timer">
+<h2>Presentation Timer</h2>
+<p class="sub">Set the time for a speaking turn.</p>
+<div class="card">
+<div class="clock" id="tClock" role="timer" aria-live="off">01:00</div>
+<div class="row" style="justify-content:center">
+<label for="tMin">Minutes</label><input type="number" id="tMin" min="0" max="99" value="1" style="width:80px">
+<label for="tSec">Seconds</label><input type="number" id="tSec" min="0" max="59" value="0" style="width:80px"></div>
+<div class="row" style="justify-content:center">
+<button class="btn" id="tStart">Start</button><button class="btn dark" id="tPause">Pause</button>
+<button class="btn alt" id="tReset">Reset</button></div>
+</div>
+</section>
+
+<!-- ACTIVITY -->
+<section id="activity">
+<h2>Classroom Activity Mode</h2>
+<p class="sub">Run one speaking turn from start to finish.</p>
+<div class="card">
+<div class="row"><label for="aCat">1. Category</label><select id="aCat"></select>
+<label class="check"><input type="checkbox" id="aEng" checked> Show instructions in English</label></div>
+<div class="row"><button class="btn" id="aPrompt">2. Generate prompt</button><button class="btn" id="aPick">3. Pick student</button>
+<button class="btn" id="aStart">4. Start timer</button><button class="btn dark" id="aNext">5. Next student</button></div>
+<p id="aIns" class="hint"></p>
+</div>
+<div class="card"><div class="stage"><div id="aName" class="big">No student yet</div></div>
+<div id="aPOut"><div class="empty">Your speaking prompt will appear here.</div></div></div>
+<div class="card"><div class="clock" id="aClock">01:00</div>
+<div class="row" style="justify-content:center"><button class="btn dark" id="aPause">Pause</button><button class="btn alt" id="aReset">Reset</button></div></div>
+</section>
+
+<!-- GAMES -->
+<section id="games">
+<h2>Classroom Games</h2>
+<p class="sub">Two quick games for warm-ups and review.</p>
+<div class="card"><h3>Game 1: Quick Answer</h3>
+<div class="stage"><div id="qStu" class="big" style="font-size:1.6rem">No student yet</div><div id="qQ" style="font-size:1.4rem;font-family:Georgia,serif">Press "New question".</div></div>
+<div class="row"><button class="btn" id="qNew">New question</button><button class="btn" id="qPick">Pick student</button><button class="btn alt" id="qShow">Show sample answer</button></div>
+<div id="qAns" class="hint" hidden></div></div>
+<div class="card"><h3>Game 2: Word Challenge</h3>
+<div class="stage"><div id="wStu" class="big" style="font-size:1.6rem">No student yet</div><div id="wW" class="big">Word</div><div>Make one sentence with this word.</div></div>
+<div class="row"><button class="btn" id="wNew">New word</button><button class="btn" id="wPick">Pick student</button><button class="btn alt" id="wShow">Show sample sentence</button></div>
+<div id="wAns" class="hint" hidden></div></div>
+</section>
+
+</main></div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+"use strict";
+/* ---------- Built-in data ---------- */
+// Prompt format: [category, task, grade, seconds, helper words / sentence starters]
+const CATS={intro:"Self-introduction",daily:"Daily activities",hobby:"Hobbies and interests",school:"School life",describe:"Describing people and places",opinion:"Giving opinions",dir:"Asking for and giving directions",past:"Describing past experiences"};
+const PROMPTS=[
+["intro","Introduce yourself to your classmates.",7,60,"My name is... / I am ... years old. / I live in... / I like..."],
+["intro","Tell us about your family.",7,60,"There are ... people in my family. / My father is... / My mother works as..."],
+["intro","Introduce your best friend.",8,60,"My best friend is... / He/She is... / We like to..."],
+["intro","Talk about your dreams and goals for the future.",9,90,"I want to be... / In the future, I will... / I hope to..."],
+["daily","Describe your daily routine.",7,90,"I get up at... / After that, I... / Then / Finally"],
+["daily","What do you usually do on weekends?",7,60,"On Saturdays, I... / Sometimes I... / I often help..."],
+["daily","Describe your morning before school.",8,60,"First, I... / Next, I... / I go to school by..."],
+["daily","What do you do to stay healthy?",9,90,"I try to... / It is important to... / I never skip..."],
+["hobby","What is your favorite hobby, and why?",7,60,"My hobby is... / I like it because... / I do it when..."],
+["hobby","Talk about your favorite sport, game, or song.",8,60,"My favorite ... is... / It is fun because..."],
+["hobby","Describe a hobby you would like to try.",9,90,"I would like to try... / I think it is interesting because..."],
+["school","What is your favorite subject, and why?",7,60,"My favorite subject is... / I like it because... / The teacher is..."],
+["school","Describe your classroom.",7,60,"There is a... / There are ... desks. / Next to the board, there is..."],
+["school","Talk about your school day from morning to afternoon.",8,90,"Our first lesson is... / At break time, we... / School finishes at..."],
+["school","What would you change about your school?",9,90,"I would like to... / It would be better if... / Students need..."],
+["describe","Describe your best friend or a family member.",7,60,"He/She is tall/short. / He/She has... hair. / He/She is kind."],
+["describe","Describe your house or your room.",8,60,"My house has... / In my room, there is... / It is big/small/clean."],
+["describe","Describe your favorite place in your town.",8,90,"It is located in... / You can see... / People go there to..."],
+["describe","Describe a famous person you admire.",9,90,"He/She is famous for... / I admire him/her because..."],
+["opinion","Do you like homework? Why or why not?",7,60,"I think... / In my opinion... / I agree/disagree because..."],
+["opinion","Is it good for students to use phones at school?",8,90,"I think it is good/bad because... / On the one hand... / However..."],
+["opinion","Should school uniforms be required?",9,90,"I believe... / One reason is... / Another reason is..."],
+["dir","Give directions from your classroom to the school library.",7,60,"Go straight. / Turn left/right. / It is next to / opposite / between..."],
+["dir","Tell a visitor how to get to the canteen.",7,60,"Go out of the classroom. / Walk along the corridor. / You will see..."],
+["dir","Explain how to get from your school to the nearest market.",8,90,"Go past the... / Take the second turning on the... / It is on your left."],
+["dir","A tourist asks you the way to the mosque or bus station. Help them.",9,90,"Excuse me, where is...? / Go straight until... / You cannot miss it."],
+["past","Describe a memorable experience from your holiday.",7,90,"Last holiday, I went to... / I saw... / It was amazing."],
+["past","What did you do last weekend?",7,60,"Last Sunday, I... / I visited... / I felt..."],
+["past","Tell us about your last birthday.",8,90,"On my birthday, we... / I received... / I was very happy."],
+["past","Describe the best day of your life so far.",9,90,"It happened when... / At first... / In the end..."]
+];
+// Quick Answer format: [question, sample answer / sentence starter]
+const QUESTIONS=[
+["What is your name?","My name is ..."],["How are you today?","I am fine, thank you. And you?"],
+["What time do you get up?","I get up at ... o'clock."],["What is your favorite food?","My favorite food is ... because it is delicious."],
+["Where do you live?","I live in ... near ..."],["What do you do after school?","After school, I usually ..."],
+["What is your favorite color?","My favorite color is ... because ..."],["Who is your best friend?","My best friend is ... He/She is ..."],
+["What did you do yesterday?","Yesterday, I ... (use past tense: went, played, studied)"],["What will you do tomorrow?","Tomorrow, I will ..."],
+["Can you swim?","Yes, I can. / No, I can't, but I can ..."],["How do you come to school?","I come to school by ... / I walk to school."],
+["What is the weather like today?","It is sunny / rainy / cloudy / hot today."],["What do you want to be in the future?","I want to be a ... because ..."]
+];
+// Word Challenge format: [word, sample sentence]
+const WORDS=[
+["library","I read many books in the school library."],["breakfast","I eat rice and eggs for breakfast."],
+["beautiful","The beach in Bali is very beautiful."],["homework","I do my homework after dinner."],
+["friendly","My teacher is friendly and kind."],["holiday","We went to Yogyakarta last holiday."],
+["delicious","My mother's fried rice is delicious."],["borrow","May I borrow your pen, please?"],
+["usually","I usually go to bed at nine o'clock."],["crowded","The market is crowded on Sunday."],
+["excited","I was excited about the school trip."],["recycle","We recycle plastic bottles at school."],
+["museum","We visited a museum last year."],["improve","I practice every day to improve my English."]
+];
+
+/* ---------- Helpers & storage ---------- */
+const $=id=>document.getElementById(id);
+const store={
+ get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},
+ set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+};
+let students=store.get("cea_students",[]);
+let completed=store.get("cea_done",0);
+let picked=store.get("cea_picked",[]);       // names already chosen this round
+let noRepeat=store.get("cea_norepeat",false);
+let toastTimer;
+function toast(msg,err){const t=$("toast");t.textContent=msg;t.className="toast show"+(err?" err":"");clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.className="toast",2600)}
+const rnd=a=>a[Math.floor(Math.random()*a.length)];
+const save=()=>{store.set("cea_students",students);store.set("cea_done",completed);store.set("cea_picked",picked);store.set("cea_norepeat",noRepeat)};
+
+/* ---------- Navigation ---------- */
+function go(id){
+ document.querySelectorAll("main section").forEach(s=>s.classList.toggle("on",s.id===id));
+ document.querySelectorAll("#nav button").forEach(b=>b.classList.toggle("on",b.dataset.go===id));
+ history.replaceState(null,"","#"+id);window.scrollTo(0,0);
+}
+document.addEventListener("click",e=>{const b=e.target.closest("[data-go]");if(b)go(b.dataset.go)});
+
+/* ---------- Students ---------- */
+function refresh(){
+ $("stCount").textContent=students.length;$("sStud").textContent=students.length;
+ $("sPrompt").textContent=PROMPTS.length;$("sDone").textContent=completed;
+ const box=$("stList");box.innerHTML="";
+ if(!students.length){box.innerHTML='<div class="empty">No students yet. Add a name above to begin.</div>';}
+ else{
+  const ul=document.createElement("ul");ul.className="list";
+  students.forEach((n,i)=>{
+   const li=document.createElement("li");if(picked.includes(n))li.className="done";
+   const sp=document.createElement("span");sp.textContent=n;
+   const w=document.createElement("span");
+   const ed=document.createElement("button");ed.className="btn alt sm";ed.textContent="Edit";ed.setAttribute("aria-label","Edit "+n);
+   const de=document.createElement("button");de.className="btn sm";de.textContent="Delete";de.setAttribute("aria-label","Delete "+n);
+   ed.onclick=()=>editStudent(i);de.onclick=()=>delStudent(i);
+   w.append(ed," ",de);li.append(sp,w);ul.append(li);
+  });box.append(ul);
+ }
+ const left=students.filter(s=>!picked.includes(s)).length;
+ $("pkLeft").textContent=noRepeat?`Students waiting for a turn: ${left} of ${students.length}`:"";
+ $("noRepeat").checked=noRepeat;
+}
+const exists=n=>students.some(s=>s.toLowerCase()===n.toLowerCase());
+function addOne(n){n=n.trim().replace(/\s+/g," ");if(!n){toast("Please type a name first.",1);return false}
+ if(exists(n)){toast(`"${n}" is already in the list.`,1);return false}students.push(n);return true}
+$("addForm").onsubmit=e=>{e.preventDefault();if(addOne($("nameIn").value)){save();refresh();toast("Student added.");$("nameIn").value=""}$("nameIn").focus()};
+$("bulkBtn").onclick=()=>{
+ const lines=$("bulkIn").value.split(/\r?\n/);let ok=0,skip=0;
+ lines.forEach(l=>{if(!l.trim())return;addOne(l)?ok++:skip++;});
+ // addOne shows toasts; show the final summary last
+ save();refresh();
+ if(!ok&&!skip)toast("Paste at least one name.",1);
+ else{toast(`${ok} added, ${skip} skipped (duplicates).`,!ok);$("bulkIn").value=""}
+};
+function editStudent(i){
+ const v=prompt("Edit student name:",students[i]);if(v===null)return;
+ const n=v.trim().replace(/\s+/g," ");
+ if(!n)return toast("A name cannot be empty.",1);
+ if(n.toLowerCase()!==students[i].toLowerCase()&&exists(n))return toast(`"${n}" is already in the list.`,1);
+ picked=picked.map(p=>p===students[i]?n:p);students[i]=n;save();refresh();toast("Name updated.");
+}
+function delStudent(i){
+ if(!confirm(`Delete "${students[i]}"?`))return;
+ picked=picked.filter(p=>p!==students[i]);students.splice(i,1);save();refresh();toast("Student deleted.");
+}
+$("clearBtn").onclick=()=>{
+ if(!students.length)return toast("The list is already empty.",1);
+ if(confirm("Clear the entire student list? This cannot be undone.")){students=[];picked=[];save();refresh();toast("List cleared.")}
+};
+
+/* ---------- Random picker ---------- */
+let spinning=false;
+// Shows a short shuffle animation in `el`, then calls done(name).
+function spinPick(el,done){
+ if(spinning)return;
+ if(!students.length){toast("Add students first.",1);go("students");return}
+ let pool=noRepeat?students.filter(s=>!picked.includes(s)):students.slice();
+ if(!pool.length){picked=[];pool=students.slice();toast("Everyone had a turn. A new round starts.");}
+ const winner=rnd(pool);spinning=true;el.classList.add("spin");
+ const iv=setInterval(()=>{el.textContent=rnd(students)},70);
+ setTimeout(()=>{
+  clearInterval(iv);el.classList.remove("spin");el.textContent=winner;spinning=false;
+  if(!picked.includes(winner))picked.push(winner);completed++;save();refresh();done&&done(winner);
+ },1400);
+}
+$("pkBtn").onclick=()=>{$("pkInfo").textContent="";spinPick($("pkName"),n=>$("pkInfo").textContent="Great! "+n+", it is your turn.")};
+$("pkReset").onclick=()=>{picked=[];save();refresh();$("pkName").textContent="Ready?";$("pkInfo").textContent="";toast("Round reset.")};
+$("noRepeat").onchange=e=>{noRepeat=e.target.checked;save();refresh()};
+$("resetStats").onclick=()=>{completed=0;save();refresh();toast("Selection count reset.")};
+
+/* ---------- Speaking prompts ---------- */
+function fillCats(sel,withAll){
+ sel.innerHTML="";
+ if(withAll)sel.add(new Option("All categories","all"));
+ Object.entries(CATS).forEach(([k,v])=>sel.add(new Option(v,k)));
+}
+fillCats($("pCat"),true);fillCats($("aCat"),true);
+// Returns a random prompt matching category and grade, or null.
+function findPrompt(cat,grade){
+ const list=PROMPTS.filter(p=>(cat==="all"||p[0]===cat)&&(grade==="all"||p[2]===+grade));
+ return list.length?rnd(list):null;
+}
+function showPrompt(p,box){
+ box.innerHTML="";
+ if(!p){box.innerHTML='<div class="empty">No prompts match this filter. Try another grade or category.</div>';return}
+ const d=document.createElement("div");d.className="prompt";
+ const q=document.createElement("div");q.className="q";q.textContent=p[1];
+ const t=document.createElement("div");
+ [CATS[p[0]],"Grade "+p[2],"Suggested time: "+Math.floor(p[3]/60)+":"+String(p[3]%60).padStart(2,"0")].forEach(x=>{const s=document.createElement("span");s.className="tag";s.textContent=x;t.append(s)});
+ const h=document.createElement("div");h.className="hint";h.textContent="Helpful words: "+p[4];
+ d.append(q,t,h);box.append(d);
+}
+let pLast=null;
+$("pGen").onclick=()=>{pLast=findPrompt($("pCat").value,$("pGrade").value);showPrompt(pLast,$("pOut"))};
+
+/* ---------- Timer (factory so Activity Mode can have its own) ---------- */
+let audioCtx;
+function beep(){ // short notification sound made with the Web Audio API
+ try{audioCtx=audioCtx||new (window.AudioContext||window.webkitAudioContext)();
+  [0,.3,.6].forEach(t=>{const o=audioCtx.createOscillator(),g=audioCtx.createGain();
+   o.frequency.value=880;o.connect(g);g.connect(audioCtx.destination);
+   g.gain.setValueAtTime(.25,audioCtx.currentTime+t);g.gain.exponentialRampToValueAtTime(.001,audioCtx.currentTime+t+.25);
+   o.start(audioCtx.currentTime+t);o.stop(audioCtx.currentTime+t+.26)});}catch(e){}
+}
+const fmt=s=>String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0");
+function makeTimer(el){
+ let total=60,left=60,iv=null; // iv is set only while running, so Start cannot create two intervals
+ const draw=()=>{el.textContent=fmt(left);el.classList.toggle("warn",iv!==null&&left>0&&left<=10);el.classList.toggle("end",left===0)};
+ const stop=()=>{clearInterval(iv);iv=null};
+ return{
+  set(sec){stop();total=left=sec;draw()},
+  start(){
+   if(iv)return;                       // already running
+   if(left<=0)left=total;
+   if(total<=0)return toast("Set a time greater than zero.",1);
+   iv=setInterval(()=>{left--;if(left<=0){left=0;stop();draw();beep();toast("Time is up!")}else draw()},1000);draw();
+  },
+  pause(){if(iv){stop();draw()}else if(left>0&&left<total)this.start()}, // acts as Resume when paused
+  reset(){stop();left=total;draw()},
+  running:()=>iv!==null,get left(){return left}
+ };
+}
+const main=makeTimer($("tClock")),act=makeTimer($("aClock"));
+function readTime(){
+ const m=Math.floor(+$("tMin").value),s=Math.floor(+$("tSec").value);
+ if(isNaN(m)||isNaN(s)||m<0||s<0||s>59||m>99){toast("Use minutes 0-99 and seconds 0-59.",1);return null}
+ if(m*60+s===0){toast("Time must be more than zero.",1);return null}
+ return m*60+s;
+}
+// A timer is "in progress" when it was paused part-way; then Start resumes instead of restarting.
+function inProgress(t){return !t.running()&&t.left>0&&t.left<lastSet.main}
+const lastSet={main:60,act:60};
+$("tStart").onclick=()=>{
+ if(main.running())return;
+ if(inProgress(main)){main.start();return}
+ const t=readTime();if(t===null)return;lastSet.main=t;main.set(t);main.start();
+};
+$("tPause").onclick=()=>{
+ if(main.running()){main.pause();$("tPause").textContent="Resume"}
+ else if(inProgress(main)){main.start();$("tPause").textContent="Pause"}
+};
+$("tReset").onclick=()=>{const t=readTime();$("tPause").textContent="Pause";if(t===null)return;lastSet.main=t;main.set(t)};
+["tMin","tSec"].forEach(id=>$(id).addEventListener("change",()=>{if(!main.running()){const t=readTime();if(t!==null){lastSet.main=t;main.set(t)}}}));
+
+/* ---------- Activity mode ---------- */
+let aPrompt=null,aStudent=null;
+const INS_EN=["Step 1: Choose a category.","Step 2: Read the speaking prompt.","Step 3: Listen for your name.","Step 4: Stand up and speak until the timer ends.","Step 5: Sit down. The next student is ready."];
+const INS_ID=["Langkah 1: Pilih kategori.","Langkah 2: Baca topik berbicara.","Langkah 3: Dengarkan namamu.","Langkah 4: Berdiri dan berbicara sampai waktu habis.","Langkah 5: Duduk. Siswa berikutnya bersiap."];
+function showIns(i){$("aIns").textContent=($("aEng").checked?INS_EN:INS_ID)[i]}
+showIns(0);
+$("aEng").onchange=()=>showIns(0);
+$("aCat").onchange=()=>showIns(0);
+function aGen(){aPrompt=findPrompt($("aCat").value,"all");showPrompt(aPrompt,$("aPOut"));showIns(1);
+ if(aPrompt){lastSet.act=aPrompt[3];act.set(aPrompt[3])}}
+$("aPrompt").onclick=aGen;
+function aPickStudent(cb){showIns(2);spinPick($("aName"),n=>{aStudent=n;cb&&cb()})}
+$("aPick").onclick=()=>aPickStudent();
+$("aStart").onclick=()=>{
+ if(!aPrompt)return toast("Generate a prompt first.",1);
+ if(!aStudent)return toast("Pick a student first.",1);
+ if(act.running())return;showIns(3);act.start();
+};
+$("aPause").onclick=()=>{
+ if(act.running()){act.pause();$("aPause").textContent="Resume"}
+ else if(act.left>0&&act.left<lastSet.act){act.start();$("aPause").textContent="Pause"}
+};
+$("aReset").onclick=()=>{$("aPause").textContent="Pause";act.set(lastSet.act)};
+// Next student: reset the timer, make a new prompt, and pick the next student.
+$("aNext").onclick=()=>{
+ if(spinning)return;
+ $("aPause").textContent="Pause";aGen();showIns(4);
+ aPickStudent(()=>showIns(2));
+};
+
+/* ---------- Games ---------- */
+let qCur=null,wCur=null;
+$("qNew").onclick=()=>{qCur=rnd(QUESTIONS);$("qQ").textContent=qCur[0];$("qAns").hidden=true};
+$("qPick").onclick=()=>spinPick($("qStu"));
+$("qShow").onclick=()=>{if(!qCur)return toast("Press New question first.",1);$("qAns").textContent="Sample answer: "+qCur[1];$("qAns").hidden=false};
+$("wNew").onclick=()=>{wCur=rnd(WORDS);$("wW").textContent=wCur[0];$("wAns").hidden=true};
+$("wPick").onclick=()=>spinPick($("wStu"));
+$("wShow").onclick=()=>{if(!wCur)return toast("Press New word first.",1);$("wAns").textContent="Sample sentence: "+wCur[1];$("wAns").hidden=false};
+
+/* ---------- Start ---------- */
+refresh();
+go(["dash","students","picker","prompts","timer","activity","games"].includes(location.hash.slice(1))?location.hash.slice(1):"dash");
+</script>
+</body>
+</html>
