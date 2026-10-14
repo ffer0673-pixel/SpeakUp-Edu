@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SpeakUp Edu</title>
+<title>Classroom English Activity Tool</title>
 <style>
 :root{--red:#701c1c;--cream:#F0EAD6;--black:#000;--card:#f8f4e6;--line:rgba(0,0,0,.18);--red-d:#521212}
 *{box-sizing:border-box;margin:0}
@@ -60,6 +60,12 @@ ul.list li.done{border-color:var(--red);background:rgba(112,28,28,.08)}
 .toast.show{opacity:1}.toast.err{background:var(--red)}
 .check{display:flex;align-items:center;gap:.5rem;font-weight:400}
 .check input{width:1.1rem;height:1.1rem;accent-color:var(--red)}
+.wheelbox{position:relative;width:min(100%,420px);margin:.5rem auto}
+.wheelbox canvas{width:100%;height:auto;display:block}
+.pointer{position:absolute;top:-8px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:16px solid transparent;border-right:16px solid transparent;border-top:34px solid var(--black);z-index:2}
+.result{font:700 1.8rem Georgia,serif;text-align:center;color:var(--red);min-height:2.4rem}
+ol.order{display:flex;flex-wrap:wrap;gap:.5rem;list-style:none;padding:0}
+ol.order li{background:var(--red);color:var(--cream);border-radius:99px;padding:.2rem .9rem}
 @media(max-width:760px){
 .layout{grid-template-columns:1fr}
 nav{flex-direction:row;overflow-x:auto;padding:.5rem}
@@ -71,20 +77,21 @@ main{padding:1rem}}
 <body>
 <header class="top">
 <svg viewBox="0 0 24 24" fill="none" stroke="#F0EAD6" stroke-width="2" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"/><path d="M8 9h8M8 12h5"/></svg>
-<h1>SpeakUp Edu</h1>
+<h1>Classroom English Activity Tool</h1>
 </header>
 <div class="layout">
 <nav aria-label="Main navigation" id="nav">
 <button data-go="dash"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>Dashboard</button>
 <button data-go="students"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="4"/><path d="M2 21c0-4 3-6 7-6s7 2 7 6M17 4a4 4 0 010 8M22 21c0-3-2-5-4-5.6"/></svg>Students</button>
 <button data-go="picker"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8" cy="8" r="1.2"/><circle cx="16" cy="16" r="1.2"/><circle cx="12" cy="12" r="1.2"/></svg>Random Picker</button>
+<button data-go="spinner"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 3v9l6 4M12 12L5 16"/></svg>Group Spinner</button>
 <button data-go="prompts"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5h16v11H9l-5 4z"/></svg>Speaking Prompts</button>
 <button data-go="timer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l3 2M9 2h6"/></svg>Timer</button>
 <button data-go="activity"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 3l14 9-14 9z"/></svg>Activity Mode</button>
 <button data-go="games"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3 7h7l-5.5 4.5L18.5 21 12 16.8 5.5 21l2-7.5L2 9h7z"/></svg>Games</button>
 </nav>
 <main>
-
+ 
 <!-- DASHBOARD -->
 <section id="dash">
 <h2>Dashboard</h2>
@@ -102,7 +109,7 @@ main{padding:1rem}}
 </ol>
 <div class="row"><button class="btn" data-go="students">Add students</button><button class="btn alt" data-go="activity">Start an activity</button><button class="btn alt" id="resetStats">Reset selection count</button></div></div>
 </section>
-
+ 
 <!-- STUDENTS -->
 <section id="students">
 <h2>Students</h2>
@@ -120,7 +127,7 @@ main{padding:1rem}}
 <div id="stList"></div>
 <div class="row"><button class="btn alt" id="clearBtn">Clear entire list</button></div></div>
 </section>
-
+ 
 <!-- PICKER -->
 <section id="picker">
 <h2>Random Picker</h2>
@@ -133,7 +140,23 @@ main{padding:1rem}}
 <p id="pkLeft" class="sub"></p>
 </div>
 </section>
-
+ 
+<!-- SPINNER -->
+<section id="spinner">
+<h2>Group Spinner</h2>
+<p class="sub">Spin the wheel to choose a group number or a student.</p>
+<div class="card">
+<div class="row">
+<label for="wSrc">Wheel items</label><select id="wSrc"><option value="groups">Group numbers</option><option value="names">Student names</option></select>
+<label for="wN">Number of groups</label><input type="number" id="wN" min="2" max="30" value="6" style="width:80px">
+<label class="check"><input type="checkbox" id="wRemove" checked> Remove the winner after each spin (draw order)</label></div>
+<div class="wheelbox"><div class="pointer" aria-hidden="true"></div><canvas id="wheel" width="420" height="420" role="img" aria-label="Spinning wheel"></canvas></div>
+<div class="result" id="wRes" aria-live="polite">Press Spin!</div>
+<div class="row" style="justify-content:center"><button class="btn" id="wSpin">Spin the wheel</button><button class="btn alt" id="wReset">Reset wheel</button></div>
+</div>
+<div class="card"><h3>Draw order</h3><div id="wOrder"></div></div>
+</section>
+ 
 <!-- PROMPTS -->
 <section id="prompts">
 <h2>Speaking Prompts</h2>
@@ -146,7 +169,7 @@ main{padding:1rem}}
 <div id="pOut"><div class="empty">Press "Generate prompt" to see a speaking task.</div></div>
 </div>
 </section>
-
+ 
 <!-- TIMER -->
 <section id="timer">
 <h2>Presentation Timer</h2>
@@ -161,7 +184,7 @@ main{padding:1rem}}
 <button class="btn alt" id="tReset">Reset</button></div>
 </div>
 </section>
-
+ 
 <!-- ACTIVITY -->
 <section id="activity">
 <h2>Classroom Activity Mode</h2>
@@ -178,7 +201,7 @@ main{padding:1rem}}
 <div class="card"><div class="clock" id="aClock">01:00</div>
 <div class="row" style="justify-content:center"><button class="btn dark" id="aPause">Pause</button><button class="btn alt" id="aReset">Reset</button></div></div>
 </section>
-
+ 
 <!-- GAMES -->
 <section id="games">
 <h2>Classroom Games</h2>
@@ -192,10 +215,10 @@ main{padding:1rem}}
 <div class="row"><button class="btn" id="wNew">New word</button><button class="btn" id="wPick">Pick student</button><button class="btn alt" id="wShow">Show sample sentence</button></div>
 <div id="wAns" class="hint" hidden></div></div>
 </section>
-
+ 
 </main></div>
 <div class="toast" id="toast" role="status"></div>
-
+ 
 <script>
 "use strict";
 /* ---------- Built-in data ---------- */
@@ -253,7 +276,7 @@ const WORDS=[
 ["excited","I was excited about the school trip."],["recycle","We recycle plastic bottles at school."],
 ["museum","We visited a museum last year."],["improve","I practice every day to improve my English."]
 ];
-
+ 
 /* ---------- Helpers & storage ---------- */
 const $=id=>document.getElementById(id);
 const store={
@@ -268,7 +291,7 @@ let toastTimer;
 function toast(msg,err){const t=$("toast");t.textContent=msg;t.className="toast show"+(err?" err":"");clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.className="toast",2600)}
 const rnd=a=>a[Math.floor(Math.random()*a.length)];
 const save=()=>{store.set("cea_students",students);store.set("cea_done",completed);store.set("cea_picked",picked);store.set("cea_norepeat",noRepeat)};
-
+ 
 /* ---------- Navigation ---------- */
 function go(id){
  document.querySelectorAll("main section").forEach(s=>s.classList.toggle("on",s.id===id));
@@ -276,7 +299,7 @@ function go(id){
  history.replaceState(null,"","#"+id);window.scrollTo(0,0);
 }
 document.addEventListener("click",e=>{const b=e.target.closest("[data-go]");if(b)go(b.dataset.go)});
-
+ 
 /* ---------- Students ---------- */
 function refresh(){
  $("stCount").textContent=students.length;$("sStud").textContent=students.length;
@@ -326,7 +349,7 @@ $("clearBtn").onclick=()=>{
  if(!students.length)return toast("The list is already empty.",1);
  if(confirm("Clear the entire student list? This cannot be undone.")){students=[];picked=[];save();refresh();toast("List cleared.")}
 };
-
+ 
 /* ---------- Random picker ---------- */
 let spinning=false;
 // Shows a short shuffle animation in `el`, then calls done(name).
@@ -346,7 +369,7 @@ $("pkBtn").onclick=()=>{$("pkInfo").textContent="";spinPick($("pkName"),n=>$("pk
 $("pkReset").onclick=()=>{picked=[];save();refresh();$("pkName").textContent="Ready?";$("pkInfo").textContent="";toast("Round reset.")};
 $("noRepeat").onchange=e=>{noRepeat=e.target.checked;save();refresh()};
 $("resetStats").onclick=()=>{completed=0;save();refresh();toast("Selection count reset.")};
-
+ 
 /* ---------- Speaking prompts ---------- */
 function fillCats(sel,withAll){
  sel.innerHTML="";
@@ -371,7 +394,7 @@ function showPrompt(p,box){
 }
 let pLast=null;
 $("pGen").onclick=()=>{pLast=findPrompt($("pCat").value,$("pGrade").value);showPrompt(pLast,$("pOut"))};
-
+ 
 /* ---------- Timer (factory so Activity Mode can have its own) ---------- */
 let audioCtx;
 function beep(){ // short notification sound made with the Web Audio API
@@ -420,7 +443,7 @@ $("tPause").onclick=()=>{
 };
 $("tReset").onclick=()=>{const t=readTime();$("tPause").textContent="Pause";if(t===null)return;lastSet.main=t;main.set(t)};
 ["tMin","tSec"].forEach(id=>$(id).addEventListener("change",()=>{if(!main.running()){const t=readTime();if(t!==null){lastSet.main=t;main.set(t)}}}));
-
+ 
 /* ---------- Activity mode ---------- */
 let aPrompt=null,aStudent=null;
 const INS_EN=["Step 1: Choose a category.","Step 2: Read the speaking prompt.","Step 3: Listen for your name.","Step 4: Stand up and speak until the timer ends.","Step 5: Sit down. The next student is ready."];
@@ -450,7 +473,7 @@ $("aNext").onclick=()=>{
  $("aPause").textContent="Pause";aGen();showIns(4);
  aPickStudent(()=>showIns(2));
 };
-
+ 
 /* ---------- Games ---------- */
 let qCur=null,wCur=null;
 $("qNew").onclick=()=>{qCur=rnd(QUESTIONS);$("qQ").textContent=qCur[0];$("qAns").hidden=true};
@@ -459,10 +482,77 @@ $("qShow").onclick=()=>{if(!qCur)return toast("Press New question first.",1);$("
 $("wNew").onclick=()=>{wCur=rnd(WORDS);$("wW").textContent=wCur[0];$("wAns").hidden=true};
 $("wPick").onclick=()=>spinPick($("wStu"));
 $("wShow").onclick=()=>{if(!wCur)return toast("Press New word first.",1);$("wAns").textContent="Sample sentence: "+wCur[1];$("wAns").hidden=false};
-
+ 
+/* ---------- Group spinner (canvas wheel) ---------- */
+const WC=["#701c1c","#F0EAD6","#000000","#a33a3a","#d9cfae","#3a0e0e"];
+const TAU=Math.PI*2;
+let wItems=[],wRot=0,wBusy=false,wOrder=[];
+const wLabel=s=>s.startsWith("Group ")?s.slice(6):(s.length>14?s.slice(0,13)+"...":s);
+function wBuild(){ // rebuild the wheel from the chosen source
+ if($("wSrc").value==="names"){
+  if(!students.length){toast("Add students first, or use group numbers.",1);$("wSrc").value="groups"}
+  else wItems=students.slice();
+ }
+ if($("wSrc").value==="groups"){
+  const n=Math.floor(+$("wN").value);
+  if(!(n>=2&&n<=30)){toast("Use 2 to 30 groups.",1);return}
+  wItems=Array.from({length:n},(_,i)=>"Group "+(i+1));
+ }
+ wOrder=[];wRot=0;$("wRes").textContent="Press Spin!";wDraw();wList();
+}
+function wDraw(){
+ const cv=$("wheel"),c=cv.getContext("2d"),R=cv.width/2,n=wItems.length;
+ c.clearRect(0,0,cv.width,cv.height);
+ if(!n){c.fillStyle="#F0EAD6";c.beginPath();c.arc(R,R,R-6,0,TAU);c.fill();c.fillStyle="#701c1c";c.font="bold 22px Georgia";c.textAlign="center";c.fillText("All done!",R,R+8);return}
+ const arc=TAU/n;
+ for(let i=0;i<n;i++){
+  const a=wRot+i*arc,bg=WC[i%WC.length];
+  c.beginPath();c.moveTo(R,R);c.arc(R,R,R-6,a,a+arc);c.closePath();c.fillStyle=bg;c.fill();
+  c.strokeStyle="#000";c.lineWidth=2;c.stroke();
+  c.save();c.translate(R,R);c.rotate(a+arc/2);
+  c.fillStyle=(bg==="#F0EAD6"||bg==="#d9cfae")?"#000":"#F0EAD6";
+  c.font="bold "+(n>20?13:n>12?17:22)+"px Georgia";c.textAlign="right";c.textBaseline="middle";
+  c.fillText(wLabel(wItems[i]),R-28,0);c.restore();
+ }
+ c.beginPath();c.arc(R,R,R-6,0,TAU);c.strokeStyle="#000";c.lineWidth=8;c.stroke();
+ c.beginPath();c.arc(R,R,26,0,TAU);c.fillStyle="#F0EAD6";c.fill();c.strokeStyle="#701c1c";c.lineWidth=5;c.stroke();
+}
+function wList(){
+ const b=$("wOrder");b.innerHTML="";
+ if(!wOrder.length){b.innerHTML='<div class="empty">Winners will appear here in the order they are drawn.</div>';return}
+ const ol=document.createElement("ol");ol.className="order";
+ wOrder.forEach(x=>{const li=document.createElement("li");li.textContent=x;ol.append(li)});b.append(ol);
+}
+function wSpin(){
+ if(wBusy)return;
+ const n=wItems.length;
+ if(!n)return toast("No items left. Press Reset wheel.",1);
+ wBusy=true;
+ const w=Math.floor(Math.random()*n),arc=TAU/n;
+ // Pointer is at the top (1.5*PI). Rotate so the middle of segment w lands under it.
+ const target=1.5*Math.PI-(w+.5)*arc;
+ const delta=(((target-wRot)%TAU)+TAU)%TAU+TAU*(5+Math.floor(Math.random()*3));
+ const from=wRot,dur=4500,t0=performance.now();
+ $("wRes").textContent="Spinning...";
+ (function step(t){
+  const p=Math.min(1,(t-t0)/dur),e=1-Math.pow(1-p,4); // ease-out so it slows down
+  wRot=from+delta*e;wDraw();
+  if(p<1)return requestAnimationFrame(step);
+  wRot%=TAU;const win=wItems[w];$("wRes").textContent=win;
+  if($("wRemove").checked){
+   wOrder.push(win);wList();
+   setTimeout(()=>{wItems.splice(w,1);wRot=0;wDraw();wBusy=false},1200);
+  }else wBusy=false;
+ })(t0);
+}
+$("wSpin").onclick=wSpin;
+$("wReset").onclick=()=>{if(wBusy)return;wBuild();toast("Wheel reset.")};
+$("wSrc").onchange=()=>{if(!wBusy)wBuild()};
+$("wN").onchange=()=>{if(!wBusy&&$("wSrc").value==="groups")wBuild()};
+ 
 /* ---------- Start ---------- */
-refresh();
-go(["dash","students","picker","prompts","timer","activity","games"].includes(location.hash.slice(1))?location.hash.slice(1):"dash");
+refresh();wBuild();
+go(["dash","students","picker","spinner","prompts","timer","activity","games"].includes(location.hash.slice(1))?location.hash.slice(1):"dash");
 </script>
 </body>
 </html>
